@@ -27,7 +27,7 @@ typedef struct {
 */
 
 // 出错直接退出
-void err(char *str) {
+void ilErr(char *str) {
     printf("%s\n", str);
     exit(1);
 }
@@ -45,11 +45,11 @@ IList *ilInitDef(IList *p) {
 IList *ilInit(IList *p, int initCap) {
     if (p->pBuf) {
         // 已经初始化过
-        err("Multi init");
+        ilErr("Multi init");
     }
     if (initCap <= 0) {
         printf("Illegal arg 'initCap':%d\n", initCap);
-        err("");
+        ilErr("");
     }
     // 分配内存
     p->pBuf = (int *)malloc(sizeof(int) * initCap);
@@ -72,20 +72,20 @@ void ilClear(IList *p) {
 }
 
 // 检查下标是否超出范围
-void rangeCheck(IList *p, int index) {
+void ilRangeCheck(IList *p, int index) {
     if (index < 0 || index >= p->size) {
-        printf("Out of bounds:%d\n", index);
-        err("");
+        printf("ilRangeCheck(), out of bounds:%d\n", index);
+        ilErr("");
     }
 }
 
 int ilGet(IList *p, int index) {
-    rangeCheck(p, index);
+    ilRangeCheck(p, index);
 
     return p->pBuf[index];
 }
 
-int grow(IList *p, int minCapacity) {
+int ilGrow(IList *p, int minCapacity) {
     // 扩容1.5倍
     int newCapacity = p->capacity + (p->capacity >> 1);
     // 至少满足要求的容量
@@ -114,7 +114,7 @@ int ilEnsureCapacity(IList *p, int minCapacity) {
     // 至少扩容到DEFAULT_CAPACITY
     minCapacity = minCapacity < DEFAULT_CAPACITY ? DEFAULT_CAPACITY : minCapacity;
 
-    return grow(p, minCapacity);
+    return ilGrow(p, minCapacity);
 }
 
 /*
@@ -122,7 +122,7 @@ int ilEnsureCapacity(IList *p, int minCapacity) {
  */
 int ilAdd(IList *p, int num) {
     if(!ilEnsureCapacity(p, p->size + 1)) {
-        err("Failed to alloc mem, can't add elem");
+        ilErr("Failed to alloc mem, can't add elem");
     }
     p->pBuf[p->size] = num;
     p->size += 1;
@@ -135,11 +135,11 @@ int ilAdd(IList *p, int num) {
 void ilInsert(IList *p, int index, int num) {
     // index等于size位置合法
     if (index > p->size || index < 0) {
-        printf("Out of bounds:%d\n", index);
-        err("");
+        printf("ilInsert(), out of bounds:%d\n", index);
+        ilErr("");
     }
     if (!ilEnsureCapacity(p, p->size + 1)) {
-        err("Failed to alloc mem, can't add elem");
+        ilErr("Failed to alloc mem, can't add elem");
     }
     // 把index位置的数及后面数都往后移动一个位置
     int numMoved = p->size - index;
@@ -157,7 +157,7 @@ void ilInsert(IList *p, int index, int num) {
  * 返回：被删除的数
  */
 int ilRemove(IList *p, int index) {
-    rangeCheck(p, index);
+    ilRangeCheck(p, index);
     
     int num = p->pBuf[index];
 
@@ -181,7 +181,7 @@ int ilRemove(IList *p, int index) {
  * 返回：原数
  */
 int ilSet(IList *p, int index, int num) {
-    rangeCheck(p, index);
+    ilRangeCheck(p, index);
     
     int tmp = p->pBuf[index];
 
@@ -235,7 +235,7 @@ char *ilToString(IList *p, char *str, int len) {
         // 检查字符数组是否够长
         strLen += strlen(s);
         if (strLen > len) {
-            err("Too small arr, calculate length by ilToStrLen()\n");
+            ilErr("Too small arr, calculate length by ilToStrLen()\n");
         }
         // 合并字符串
         strcat(str, s);
@@ -351,7 +351,7 @@ void isPrint(IStack *p) {
 
 
 // ------ test code ---------------------------------------
-
+/*
 int main() {
     printf("---- test IList -----------------------------\n");
     IList ilist = {0};
@@ -455,4 +455,4 @@ int main() {
 
     return 0;
 }
-
+*/

@@ -32,7 +32,7 @@ typedef struct {
 */
 
 // 出错直接退出
-void err(char *str) {
+void plErr(char *str) {
     printf("%s\n", str);
     exit(1);
 }
@@ -50,11 +50,11 @@ PList *plInitDef(PList *ppl) {
 PList *plInit(PList *ppl, int initCap) {
     if (ppl->ppBuf) {
         // 已经初始化过
-        err("Multi init");
+        plErr("Multi init");
     }
     if (initCap <= 0) {
         printf("Illegal arg:%d\n", initCap);
-        err("");
+        plErr("");
     }
     // 分配内存
     ppl->ppBuf = (void **)malloc(initCap * sizeof(void *));
@@ -78,19 +78,19 @@ void plClear(PList *ppl) {
 }
 
 // 检查下标是否超出范围
-void rangeCheck(PList *ppl, int index) {
+void plRangeCheck(PList *ppl, int index) {
     if (index < 0 || index >= ppl->size) {
-        printf("Out of bounds:%d\n", index);
-        err("");
+        printf("plRangeCheck(), out of bounds:%d\n", index);
+        plErr("");
     }
 }
 
 void *plGet(PList *ppl, int index) {
-    rangeCheck(ppl, index);
+    plRangeCheck(ppl, index);
     return ppl->ppBuf[index];
 }
 
-int grow(PList *ppl, int minCapacity) {
+int plGrow(PList *ppl, int minCapacity) {
     // 扩容1.5倍
     int newCapacity = ppl->capacity + (ppl->capacity >> 1); 
     // 至少满足要求的容量
@@ -119,7 +119,7 @@ int plEnsureCapacity(PList *ppl, int minCapacity) {
     // 至少扩容到DEFAULT_CAPACITY
     minCapacity = minCapacity < DEFAULT_CAPACITY ? DEFAULT_CAPACITY : minCapacity;
 
-    return grow(ppl, minCapacity);
+    return plGrow(ppl, minCapacity);
 }
 
 /*
@@ -127,7 +127,7 @@ int plEnsureCapacity(PList *ppl, int minCapacity) {
  */
 int plAdd(PList *ppl, void *pValue) {
     if(!plEnsureCapacity(ppl, ppl->size + 1)) {
-        err("Failed to alloc mem, can't add elem");
+        plErr("Failed to alloc mem, can't add elem");
     }
     ppl->ppBuf[ppl->size] = pValue;
     ppl->size += 1;
@@ -140,11 +140,11 @@ int plAdd(PList *ppl, void *pValue) {
 void plInsert(PList *ppl, int index, void *pValue) {
         // index等于size位置合法
     if (index > ppl->size || index < 0) {
-        printf("Out of bounds:%d\n", index);
-        err("");
+        printf("plInsert(), out of bounds:%d\n", index);
+        plErr("");
     }
     if (!plEnsureCapacity(ppl, ppl->size + 1)) {
-        err("Failed to alloc mem, can't add elem");
+        plErr("Failed to alloc mem, can't add elem");
     }
     // 把index位置的指针及后面指针都往后移动一个位置
     int numMoved = ppl->size - index;
@@ -162,7 +162,7 @@ void plInsert(PList *ppl, int index, void *pValue) {
  * 返回：被删除的指针
  */
 void *plRemove(PList *ppl, int index) {
-    rangeCheck(ppl, index);
+    plRangeCheck(ppl, index);
 
     void *p = ppl->ppBuf[index];
 
@@ -186,7 +186,7 @@ void *plRemove(PList *ppl, int index) {
  * 返回：原指针
  */
 void *plSet(PList *ppl, int index, void *pValue) {
-    rangeCheck(ppl, index);
+    plRangeCheck(ppl, index);
 
     void *tmp = ppl->ppBuf[index];
 
@@ -314,7 +314,7 @@ void psPrint(PStack *pps) {
 
 
 // ------ test code ------------------------------------------------------
-
+/*
 int main() {
     printf("---- test PList -----------------------------\n");
     PList plist = {0};
@@ -415,3 +415,4 @@ int main() {
 
     return 0;
 }
+*/
