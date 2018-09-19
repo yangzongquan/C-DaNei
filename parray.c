@@ -1,14 +1,26 @@
 /*
  * 采用数组实现的List<void *>、Stack<void *>、Queue<void *>数据结构。
  *
+ * 使用前需要初始化分配内存，使用完需要调用销毁函数释放内存。
+ *
  * 自动扩容：
  *     当容量不够用时，自动扩充容量。扩充容量过程中需要重新分配
  *     内存，并复制原有数据。所以，在初始化或者使用过程中尽量明
  *     确容量。
+ * 
+ * 当作List使用时：
+ *      适合定长、随机访问多、删除插入少时使用。
+ *      LinkList更适合变长、随机访问少、删除插入多的操作。
  *
- * 使用前需要初始化分配内存，使用完需要调用销毁函数释放内存。
+ * 当作Stack使用时：
+ *      一般定长、省内存时使用，其他情况使用LinkStack。
+ *
+ * 当做Queue使用时:
+ *      一般定长、省内存时使用，其他情况使用LinkQueue。
+ *      （后面单独实现：数组+循环队列+自动扩容）
  *
  * */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +28,7 @@
 #include "parray.h"
 
 #define         DEFAULT_CAPACITY      10
+
 
 /*
 #define       PA_SUCCESS      1
@@ -25,7 +38,7 @@ typedef struct {
     void **pBuf;
     int capacity;
     int size;
-} PArray;
+} PArray, PArrayList;
 */
 
 // 出错直接退出
@@ -47,7 +60,7 @@ PArray *paInitDef(PArray *a) {
 PArray *paInit(PArray *a, int initCap) {
     if (a->pBuf) {
         // 已经初始化过
-        paErr("Multi init");
+        paErr("Multi init\n");
     }
     if (initCap <= 0) {
         printf("Illegal arg initCap:%d\n", initCap);
@@ -136,7 +149,7 @@ int paAdd(PArray *a, void *p) {
         paErr("Failed to alloc mem, can't add elem");
     }
     a->pBuf[a->size] = p;
-    a->size += 1;
+    a->size++;
     return a->size - 1;
 }
 
@@ -161,7 +174,7 @@ void paInsert(PArray *a, void *p, int index) {
         }
     }
     a->pBuf[index] = p;
-    a->size += 1;
+    a->size++;
 }
 
 /*
@@ -183,7 +196,7 @@ void *paRemove(PArray *a, int index) {
         }
     }
     // 大小减一
-    a->size -= 1;
+    a->size--;
 
     return p;
 }
@@ -263,49 +276,319 @@ void paPrint(PArray *a) {
     printf(">\n");
 }
 
+//-------- Stack ----------------------------
+
+typedef PArray PArrayStack;
+
+/*
+ * 采用默认容量初始化栈。
+ */
+PArrayStack *paStkInitDef(PArrayStack *s) {
+    return paInitDef(s);
+}
+
+/*
+ * 根据指定的容量初始化栈。
+ */
+PArrayStack *paStkInit(PArrayStack *s, int initCap) {
+    return paInit(s, initCap);
+}
+
+/*
+ * 清除元素，释放内存。
+ */
+void paStkDestroy(PArrayStack *s) {
+    paDestroy(s);
+}
+
+/*
+ * 清除所有元素。
+ */
+void paStkClear(PArrayStack *s) {
+    paClear(s);
+}
+
+/*
+ * 返回栈中元素个数。
+ */
+int paStkSize(PArrayStack *s) {
+    return paSize(s);
+}
+
+/*
+ * 判断栈是否为空。
+ */
+int paStkEmpty(PArrayStack *s) {
+    return paEmpty(s);
+}
+
+/*
+ * 获取栈容量。
+ */
+int paStkCapacity(PArrayStack *s) {
+    return paCapacity(s);
+}
+
+/*
+ * 确保minCapacity容量。
+ *
+ * 返回：#PA_SUCCESS表示成功，#PA_FAILED表示失败
+ */
+int paStkEnsureCapacity(PArrayStack *s, int minCapacity) {
+    return paEnsureCapacity(s, minCapacity);
+}
+
 /*
  * 查看栈顶元素。
  */
-void *paStackPeek(PArray *a) {
-    return paGet(a, a->size - 1);
+void *paStkPeek(PArrayStack *s) {
+    return paGet(s, s->size - 1);
 }
 
 /*
  * 弹出栈顶元素。
  */
-void *paStackPop(PArray *a) {
-    return paRemove(a, a->size - 1);
+void *paStkPop(PArrayStack *s) {
+    return paRemove(s, s->size - 1);
 }
 
 /*
  * 元素入栈。
  */
-void paStackPush(PArray *a, void *p) {
-    paAdd(a, p);
+void paStkPush(PArrayStack *s, void *p) {
+    paAdd(s, p);
+}
+
+/*
+ * 用于栈遍历。
+ */
+void *paStkGet(PArrayStack *s, int index) {
+    return paGet(s, index);
+}
+
+/*
+ * 判断栈是否包含指定元素。
+ */
+int paStkContain(PArrayStack *s, void *p) {
+    return paContain(s, p);
+}
+
+/*
+ * 打印栈。
+ */
+void paStkPrint(PArrayStack *s) {
+    paPrint(s);
+}
+
+
+
+
+//-------- Queue ----------------------------
+
+/*
+typedef struct {
+    void **pBuf;
+    int capacity;
+    int size;
+    int head;
+    int tail;
+} PArrayQueue;
+*/
+
+/*
+ * 采用默认容量初始化队列。
+ */
+PArrayQueue *paQueInitDef(PArrayQueue *q) {
+    return paQueInit(q, DEFAULT_CAPACITY);
+}
+
+/*
+ * 根据指定的容量初始化队列。
+ */
+PArrayQueue *paQueInit(PArrayQueue *q, int initCap) {
+    if (q->pBuf) {
+        // 已经初始化过
+        paErr("Multi init");
+    }
+    if (initCap <= 0) {
+        printf("Illegal arg initCap:%d\n", initCap);
+        exit(1);
+    }
+    // 分配内存
+    q->pBuf = (void **)malloc(initCap * sizeof(void *));
+    // 分配失败
+    if (!q->pBuf) return NULL;
+    q->capacity = initCap;
+    q->size = 0;
+    q->head = 0;
+    q->tail = 0;
+
+    return q;
+}
+
+/*
+ * 清除元素，释放内存。
+ */
+void paQueDestroy(PArrayQueue *q) {
+    free(q->pBuf);
+    q->pBuf = NULL;
+    q->capacity = 0;
+    q->size = 0;
+    q->head = 0;
+    q->tail = 0;
+}
+
+/*
+ * 清除所有元素。
+ */
+void paQueClear(PArrayQueue *q) {
+    q->size = 0;
+    q->head = 0;
+    q->tail = 0;
+}
+
+/*
+ * 返回队列中元素个数。
+ */
+int paQueSize(PArrayQueue *q) {
+    return q->size;
+}
+
+/*
+ * 判断队列是否为空。
+ */
+int paQueEmpty(PArrayQueue *q) {
+    return q->size == 0;
+}
+
+/*
+ * 获取队列容量。
+ */
+int paQueCapacity(PArrayQueue *q) {
+    return q->capacity;
 }
 
 /*
  * 查看队列第一个元素。
  */
-void *paQueuePeek(PArray *a) {
-    return paGet(a, 0);
+void *paQuePeek(PArrayQueue *q) {
+    if (q->size == 0) {
+        printf("Empty queue, can't peek first elem.\n");
+        exit(1);
+    }
+    return q->pBuf[q->head];
 }
 
 /*
  * 弹出队列第一个元素。
  */
-void *paQueuePop(PArray *a) {
-    return paRemove(a, 0);
+void *paQuePop(PArrayQueue *q) {
+    if (q->size == 0) {
+        printf("Empty queue, can't pop first elem.\n");
+        exit(1);
+    }
+    void *value = q->pBuf[q->head];
+    // head位置后移一位
+    q->head++;
+    // 当head超出数组末尾，回到数组开头
+    q->head %= q->capacity;
+    
+    q->size--;
+    return value;
+}
+
+int paQueGrow(PArrayQueue *q, int minCapacity) {
+    // 扩容1.5倍
+    int newCapacity = q->capacity + (q->capacity >> 1); 
+    // 至少满足要求的容量
+    newCapacity = newCapacity < minCapacity ? minCapacity : newCapacity;
+
+    void **ppNew = (void **) malloc(newCapacity * sizeof(void *));
+    if (ppNew) {
+        // 复制队列中元素。
+        for (int i = 0, oldIndex; i < q->size; i++) {
+            oldIndex = (q->head + i) % q->capacity;
+            ppNew[i] = q->pBuf[oldIndex];
+        }
+        free(q->pBuf);
+        q->pBuf = ppNew;
+        q->capacity = newCapacity;
+        q->head = 0;
+        // 重置队列头尾
+        q->tail = q->size;
+        return PA_SUCCESS;
+    } else {
+        return PA_FAILED;
+    }   
+}
+
+/*
+ * 确保minCapacity容量。
+ *
+ * 返回：#PA_SUCCESS表示成功，#PA_FAILED表示失败
+ */
+int paQueEnsureCapacity(PArrayQueue *q, int minCapacity) {
+    if (q->capacity >= minCapacity) {
+        // 现有容量已经满足
+        return PA_SUCCESS;
+    }   
+    // 至少扩容到DEFAULT_CAPACITY
+    minCapacity = minCapacity < DEFAULT_CAPACITY ? DEFAULT_CAPACITY : minCapacity;
+
+    return paQueGrow(q, minCapacity);
 }
 
 /*
  * 将元素放入队列末尾。
  */
-void paQueuePush(PArray *a, void *p) {
-    paAdd(a, p);
+void paQuePush(PArrayQueue *q, void *p) {
+    paQueEnsureCapacity(q, q->size + 1);
+
+    q->pBuf[q->tail] = p;
+    // tail位置后移一位
+    q->tail++;
+    // 当tail超出数组末尾，回到数组开头
+    q->tail %= q->capacity;
+
+    q->size++;
 }
 
+/*
+ * 用于队列遍历。
+ */
+void *paQueGet(PArrayQueue *q, int index) {
+    if (q->size == 0) {
+        printf("Empty queue, can't get specific position elem.\n");
+        exit(1);
+    }
+    index = (q->head + index) % q->capacity;
+    return q->pBuf[index];
+}
 
+/*
+ * 判断队列是否包含指定元素。
+ */
+int paQueContain(PArrayQueue *q, void *p) {
+    for (int i = 0, index; i < q->size; i++) {
+        index = (q->head + i) % q->capacity;
+        if (q->pBuf[index] == p) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ * 打印队列。
+ */
+void paQuePrint(PArrayQueue *q) {
+    printf("[");
+    for (int i = 0, index; i < q->size; i++) {
+        index = (q->head + i) % q->capacity;
+        printf(i == 0 ? "%p" : " %p", q->pBuf[index]);
+    }
+    printf("]\n");
+}
 
 
 // ------ test code ------------------------------------------------------
@@ -320,7 +603,7 @@ void test() {
     p = paInit(p, 3);
     printf("init(3) capacity:%d\n", paCapacity(p));
 
-    int n1 = 1, n2 = 2, n3 = 3, n4 = 4, n5 = 5, n6 = 6;
+    char n1 = 1, n2 = 2, n3 = 3, n4 = 4, n5 = 5, n6 = 6;
     printf("n1:%p, n2:%p, n3:%p, n4:%p, n5:%p, n6:%p\n", &n1, &n2, &n3, &n4, &n5, &n6);
 
     paAdd(p, &n1);
@@ -369,56 +652,82 @@ void test() {
 
 
 
-    printf("\n---- test Stack and Queue -----------------------------\n");
+    printf("\n---- test Stack -----------------------------\n");
 
-    PArray *pa = paInitDef(p);
-    printf("initDef() capacity:%d\n", paCapacity(pa));
-    paDestroy(pa);
+    PArrayStack *s = paStkInitDef(p);
+    printf("initDef() capacity:%d\n", paStkCapacity(s));
+    paStkDestroy(s);
 
-    pa = paInit(pa, 2);
-    printf("init(2) capacity:%d\n", paCapacity(pa));
+    s = paStkInit(s, 2);
+    printf("init(2) capacity:%d\n", paStkCapacity(s));
 
     printf("n1:%p, n2:%p, n3:%p, n4:%p, n5:%p, n6:%p\n", &n1, &n2, &n3, &n4, &n5, &n6);
 
-    paStackPush(pa, &n1);
-    printf("stackpush(&n1) size:%d\n", paSize(pa));
+    paStkPush(s, &n1);
+    printf("stackpush(&n1) size:%d\n", paStkSize(s));
 
-    paStackPush(pa, &n2);
-    printf("stackpush(&n2) size:%d\n", paSize(pa));
+    paStkPush(s, &n2);
+    printf("stackpush(&n2) size:%d\n", paStkSize(s));
 
-    paStackPush(pa, &n3);
-    printf("stackpush(&n3) size:%d\n", paSize(pa));
+    paStkPush(s, &n3);
+    printf("stackpush(&n3) size:%d\n", paStkSize(s));
 
-    paPrint(pa);
+    paStkPrint(s);
 
-    pNum = paStackPop(pa);
-    printf("stackpop()=%p, size:%d\n", pNum, paSize(pa));
-    paPrint(pa);
+    pNum = paStkPop(s);
+    printf("stackpop()=%p, size:%d\n", pNum, paStkSize(s));
+    paStkPrint(s);
 
-    printf("stackpeek()=%p, size:%d\n", paStackPeek(pa), paSize(pa));
+    printf("stackpeek()=%p, size:%d\n", paStkPeek(s), paStkSize(s));
 
-    paEnsureCapacity(pa, 20);
-    printf("ensureCapacity(20) capacity:%d\n", paCapacity(pa));
+    paStkEnsureCapacity(s, 20);
+    printf("ensureCapacity(20) capacity:%d\n", paStkCapacity(s));
 
-    paStackPush(pa, &n5);
-    printf("stackpush(&n5) size:%d\n", paSize(pa));
-    paPrint(pa);
+    paStkPush(s, &n5);
+    printf("stackpush(&n5) size:%d\n", paStkSize(s));
+    paStkPrint(s);
 
-    pNum = paQueuePeek(pa);
-    printf("queuePeek(pa)=%p, size=%d\n", pNum, paSize(pa));
 
-    pNum = paQueuePop(pa);
-    printf("queuePop(pa)=%p, size=%d\n", pNum, paSize(pa));
 
-    paQueuePush(pa, &n6);
-    printf("queuePush(&n6), size=%d\n", paSize(pa));
-    paPrint(pa);
+    printf("\n---- test Queue -----------------------------\n");
 
-    paClear(pa);
-    printf("clear(), size=%d, empty=%d\n", paSize(pa), paEmpty(pa));
+    PArrayQueue queue = {0};
+    PArrayQueue *q = paQueInit(&queue, 3);
+    printf("n1:%p, n2:%p, n3:%p, n4:%p, n5:%p, n6:%p\n", &n1, &n2, &n3, &n4, &n5, &n6);
 
-    paDestroy(pa);
-    printf("destroy() buf:%p, capacity:%d, size:%d\n", pa->pBuf, pa->capacity, pa->size);
+    paQuePush(q, &n1);
+    paQuePush(q, &n2);
+    paQuePush(q, &n3);
+    printf("paQuePush(&n1 &n2 &n3)\n");
+    printf("size:%d, cap:%d, head:%d, tail:%d\n", q->size, q->capacity, q->head, q->tail);
+    
+    pNum = paQuePeek(q);
+    printf("paQuePeek(q)=%p, size=%d\n", pNum, paQueSize(q));
+
+    pNum = paQuePop(q);
+    printf("paQuePop(q)=%p, empty=%d\n", pNum, paQueEmpty(q));
+    printf("size:%d, cap:%d, head:%d, tail:%d\n", q->size, q->capacity, q->head, q->tail);
+
+    paQuePush(q, &n4);
+    printf("paQuePush(&n4), size=%d, cap=%d\n", paQueSize(q), paQueCapacity(q));
+    printf("size:%d, cap:%d, head:%d, tail:%d\n", q->size, q->capacity, q->head, q->tail);
+    printf("paQueGet(0)=%p, contain(&n2)=%d\n", paQueGet(q, 0), paQueContain(q, &n2));
+    paQuePrint(q);
+
+    paQuePush(q, &n5);
+    printf("paQuePush(&n5), size=%d, cap=%d\n", paQueSize(q), paQueCapacity(q));
+    printf("size:%d, cap:%d, head:%d, tail:%d\n", q->size, q->capacity, q->head, q->tail);
+    paQuePrint(q);
+
+    paQueEnsureCapacity(q, 20);
+    printf("paQueEnsureCapacity(q,20) cap:%d\n", paQueCapacity(q));
+
+    paQueClear(q);
+    printf("clear(), size=%d, empty=%d, contain(&n2)=%d\n", paQueSize(q), paQueEmpty(q), paQueContain(q, &n2));
+
+    paQueDestroy(q);
+    printf("destroy() buf:%p, capacity:%d, size:%d\n", q->pBuf, q->capacity, q->size);
+
 }
 
 /*

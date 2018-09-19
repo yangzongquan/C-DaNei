@@ -1,23 +1,24 @@
 /*
- * 双向环链表。
- * head是一个无值节点，不存放数据，head->next指向链表头，head->prev指向链表尾。
- *     head->next -- Node1 -- Node2 -- ... -- NodeN -- prev<-head
+ * 单向链表。
  *
- * 可当做List、Stack、Queue使用。
- *
+ * 可当做Stack、Queue使用。
+ * 
+ * 性能分析：
+ *     1. 多一个指针，内存加倍，相比与数组1.5倍扩容相差不多。
+ *     2. 当作Stack、Queue使用时，均头尾直接操作，无遍历，性能很好。
  */
 
-typedef struct PNode {
+typedef struct PNNode {
     void *value; // 数据值
-    struct PNode *prev; // 上一个节点指针
-    struct PNode *next; // 下一个节点指针
-} PNode;
+    struct PNNode *next; // 下一个节点指针
+} PNNode;
 
 typedef struct {
-    PNode *head; // 链表头/尾
+    PNNode *head; // 链表头
+    PNNode *tail; // 链表尾
     int size;
-    PNode *iterator; // 用于遍历的指针
-} PLink;
+    PNNode *iterator; // 用于遍历的指针
+} PLink, PLinkStack, PLinkQueue;
 
 /*
  * 初始化链表。
@@ -37,11 +38,6 @@ void plDestroy(PLink *l);
 void plClear(PLink *l);
 
 /*
- * 获取index指定位置的元素。
- */
-void *plGet(PLink *l, int index);
-
-/*
  * 获取第一个元素。
  */
 void *plGetFirst(PLink *l);
@@ -54,57 +50,23 @@ void *plGetLast(PLink *l);
 /*
  * 添加元素到队列开头
  */
-void plAddFirst(PLink *l, void *pValue);
+void plAddFirst(PLink *l, void *p);
 
 /*
  * 添加元素到队列末尾。
  */
-void plAddLast(PLink *l, void *pValue);
+void plAddLast(PLink *l, void *p);
 
 /*
  * 添加元素到队列末尾。
  */
-void plAdd(PLink *l, void *pValue);
-
-/*
- * 添加元素到index下标处
- */
-void plInsert(PLink *l, void *pValue, int index);
-
-/*
- * 查找元素第一次出现的位置。
- * 返回：找到返回位置，没找到返回-1。
- */
-int plIndexOf(PLink *l, void *pValue);
-
-/*
- * 删除index位置元素。
- * 返回：被删除的元素。
- */
-void *plRemove(PLink *l, int index);
+void plAdd(PLink *l, void *p);
 
 /*
  * 删除第一个元素。
  * 返回：被删除的元素。
  */
 void *plRemoveFirst(PLink *l);
-
-/*
- * 删除末尾元素。
- * 返回：被删除的元素。
- */
-void *plRemoveLast(PLink *l);
-
-/*
- * 删除第一个值为p的元素。
- * 返回：找到并删除则返回被删除元素的位置，未找到则返回-1。
- */
-int plRemoveElem(PLink *l, void *p);
-
-/*
- * 返回：被替换的元素值。
- */
-void *plSet(PLink *l, int index, void *p);
 
 /*
  * 元素入栈。
@@ -154,7 +116,7 @@ int plContain(PLink *l, void *p);
 /*
  * 遍历前，重置迭代器位置到-1位置。
  */
-void plResetIterator(PLink *l);
+void plMoveToBeforeFirst(PLink *l);
 
 /*
  * 遍历时，确定当前迭代器位置后面是否包含元素。
