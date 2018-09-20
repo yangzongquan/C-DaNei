@@ -165,7 +165,7 @@ void pllAddBefore(PLLink *l, void *p, PPNNode *node) {
     PPNNode *newNode = pllNewNode(node->prev, node, p);
     newNode->prev->next = newNode;
     newNode->next->prev = newNode;
-    l->size += 1;
+    l->size++;
 }
 
 /*
@@ -220,10 +220,13 @@ void *pllRemove(PLLink *l, int index) {
     PPNNode *n = pllInternalGet(l, index);
     n->prev->next = n->next;
     n->next->prev = n->prev;
+    n->prev = NULL;
+    n->next = NULL;
 
     void *value = n->value;
     free(n);
-    l->size -= 1;
+    n = NULL;
+    l->size--;
 
     return value;
 }
@@ -406,7 +409,7 @@ void pllPrint(PLLink *l) {
 /************** test code ***************************************/
 
 
-void test() {
+void pllTest() {
     PLLink link;
     PLLink *l = pllInit(&link);
     char s[6] = {0};
@@ -500,12 +503,13 @@ void test() {
     printf("pllQuePop(l)=%p\n", pllQuePop(l));
 
     pllDestroy(l);
-    printf("pllDestroy(l)\n");
+    printf("pllDestroy(l)\n\n");
 }
 
 /*
 int main() {
-    test();
+    pllTest();
+    pllTest();
     return 0;
 }
 */

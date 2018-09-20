@@ -146,10 +146,12 @@ void *plRemoveFirst(PLink *l) {
 
     PNNode *first = l->head;
     l->head = l->head->next;
+    first->next = NULL;
     l->size--;
 
     void *value = first->value;
     free(first);
+    first = NULL;
 
     if (l->size == 0) {
         l->tail = NULL;
@@ -280,30 +282,9 @@ void plPrint(PLink *l) {
 }
 
 
-PLink *plInit(PLink *link);
-void plDestroy(PLink *l);
-void plClear(PLink *l);
-void *plGetFirst(PLink *l);
-void *plGetLast(PLink *l);
-void plAddFirst(PLink *l, void *p);
-void plAddLast(PLink *l, void *p);
-void plAdd(PLink *l, void *p);
-void *plRemoveFirst(PLink *l);
-void plStackPush(PLink *l, void *p);
-void *plStackPeek(PLink *l);
-void *plStackPop(PLink *l);
-void plQueuePush(PLink *l, void *p);
-void *plQueuePeek(PLink *l);
-void *plQueuePop(PLink *l);
-int plSize(PLink *l);
-int plEmpty(PLink *l);
-int plContain(PLink *l, void *p);
-void plMoveToBeforeFirst(PLink *l);
-int plHasNext(PLink *l);
-void *plNext(PLink *l);
-void plPrint(PLink *l);
+//-------------- test code -----------------------------------
 
-void test() {
+void plTest() {
     PLink plink = {0};
     PLink *l = plInit(&plink);
 
@@ -369,7 +350,7 @@ void test() {
 
 /*
 int main() {
-    test();
+    plTest();
     return 0;
 }
 */

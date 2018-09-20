@@ -593,7 +593,7 @@ void paQuePrint(PArrayQueue *q) {
 
 // ------ test code ------------------------------------------------------
 
-void test() {
+void paTest() {
     printf("---- test PArray -----------------------------\n");
     PArray array = {0};
     PArray *p = paInitDef(&array);
@@ -732,7 +732,7 @@ void test() {
 
 /*
 int main() {
-    test();
+    paTest();
     return 0;
 }
 */
