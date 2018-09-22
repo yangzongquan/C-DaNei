@@ -2,6 +2,9 @@
  * 快速排序。
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <limits.h>
 
 void swap(int *num1, int *num2) {
     int tmp = *num1;
@@ -63,11 +66,45 @@ void print(int nums[], int len) {
     printf("]\n");
 }
 
+void randNums(int *nums, int len, int maxNum) {
+    for (int i = 0; i < len; i++) {
+        *(nums + i) = rand() % maxNum;
+    }
+}
+
+void checkOrder(int *nums, int len) {
+    for (int i = 1; i < len; i++) {
+        if (nums[i] < nums[i - 1]) {
+            printf("Sort error!\n");
+            exit(0);
+        }
+    }
+}
+
 int main() {
-    int nums[9] = {50, 30, 80, 60, 20, 40, 10, 90, 20};
-    print(nums, 9);
-    sort(nums, 9);
-    print(nums, 9);
+/*
+    for (int i = 0; i < 990000; i++) {
+        int len = 10 + (rand() % 6);
+        int nums[len];
+        randNums(nums, len, 100);
+        print(nums, len);
+        sort(nums, len);
+        print(nums, len);
+        checkOrder(nums, len);
+    }
+*/
+
+    for (int i = 0; i < 1; i++) {
+        int len = 99990000;
+        int *nums = (int *) malloc(sizeof(int) * len);
+        randNums(nums, len, INT_MAX);
+        long startTime = time(0);
+        sort(nums, len);
+        printf("elapse time:%lds\n", time(0) - startTime);
+        checkOrder(nums, len);
+        free(nums);
+    }
+
     return 0;
 }
 
