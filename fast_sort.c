@@ -10,6 +10,9 @@ void swap(int *num1, int *num2) {
 }
 
 void sort(int nums[], int len) {
+    if (len < 2) {
+        return;
+    }
     // 头尾下标
     int head = 0, tail = len - 1;
     // 基准数，初始在head位置
@@ -23,29 +26,33 @@ void sort(int nums[], int len) {
                 // head位置数已经确定了位置，head指向后一个位置
                 head++;
             } else {
-                // 基准数比tail位置数小，无需位移
+                // 基准数比tail位置数小，无需交换
                 // tail位置数已经确定了位置，tail指向前一个位置
                 tail--;
             }
         } else {
+            // 基准数在tail位置，与head位置比较
             if (base < nums[head]) {
+                // 基准数比head小，交换位置
                 swap(nums + head, nums + tail);
+                // tail位置数已经确定了位置，tail指向前一个位置
                 tail--;
             } else {
+                // 基准数比head大，无需交换
+                // head位置数已经确定了位置，head指向后一个位置
                 head++;
             }
         }
     }
     // 此时head与tail相等
 
+    // 左组数递归排序
     int *left = nums, leftLen = head;
-    if (leftLen > 1) {
-        sort(left, leftLen);
-    }
+    sort(left, leftLen);
+
+    // 右组数递归排序
     int *right = nums + head + 1, rightLen = len - head - 1;
-    if (rightLen > 1) {
-        sort(right, rightLen);
-    }
+    sort(right, rightLen);
 }
 
 void print(int nums[], int len) {
