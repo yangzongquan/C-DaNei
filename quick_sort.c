@@ -21,30 +21,16 @@ void sort(int nums[], int len) {
     // 基准数，初始在head位置
     int base = nums[0];
     while (head < tail) {
+        // 如果head位置数大，则交换位置，否则不交换
+        if (nums[head] > nums[tail]) {
+            swap(nums + head, nums + tail);
+        }
         if (base == nums[head]) {
-            // 基准数在head位置，与tail位置比较
-            if (base > nums[tail]) {
-                // 基准数比tail位置数大，交换位置
-                swap(nums + head, nums + tail);
-                // head位置数已经确定了位置，head指向后一个位置
-                head++;
-            } else {
-                // 基准数比tail位置数小，无需交换
-                // tail位置数已经确定了位置，tail指向前一个位置
-                tail--;
-            }
+            // 如果基准数在head位置，tail位置数位置确定，tail指向前一个位置
+            tail--;
         } else {
-            // 基准数在tail位置，与head位置比较
-            if (base < nums[head]) {
-                // 基准数比head小，交换位置
-                swap(nums + head, nums + tail);
-                // tail位置数已经确定了位置，tail指向前一个位置
-                tail--;
-            } else {
-                // 基准数比head大，无需交换
-                // head位置数已经确定了位置，head指向后一个位置
-                head++;
-            }
+            // 如果基准数在tail位置，head位置数位置确定，head指向后一个位置
+            head++;
         }
     }
     // 此时head与tail相等
