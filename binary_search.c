@@ -10,18 +10,18 @@ int search(int target, int *nums, int len) {
     int head = 0, tail = len - 1;
     while (head <= tail) {
         // 中间位置下标
-        int cur = (head + tail) / 2;
-        if (nums[cur] == target) {
-            return cur;
+        int mid = (head + tail) / 2;
+        if (nums[mid] == target) {
+            return mid;
         }
-        if (target < nums[cur]) {
+        if (target < nums[mid]) {
             // 如果目标数小于中间位置数，
             // 则查找前半部分元素
-            tail = cur - 1;
+            tail = mid - 1;
         } else {
             // 如果目标数大于中间位置数，
             // 则查找后半部分元素
-            head = cur + 1;
+            head = mid + 1;
         }
     }
     return -1;
